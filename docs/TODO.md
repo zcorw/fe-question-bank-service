@@ -71,7 +71,7 @@ FE Question Bank Service 是一个独立题库服务，用于把 `fe_siken_quest
   Depends on: T001.
   Verify: 解析 fixture HTML，断言 `2^5`、`¬x`、`¬y` 等文本不丢失。
 
-- [ ] T006 [P1] 实现 Admin API
+- [x] T006 [P1] 实现 Admin API
   Goal: 提供单题刷新、缺失详情补齐、缓存校验接口。
   Notes: Admin API 需要 token；写库使用事务；批量刷新返回成功和失败列表。
   Likely files/modules: `src/question_bank_service/admin/router.py`, `admin/service.py`, `admin/schemas.py`.

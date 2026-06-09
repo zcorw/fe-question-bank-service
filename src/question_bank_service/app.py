@@ -1,10 +1,15 @@
 from fastapi import FastAPI
 
+from question_bank_service.admin.router import DetailHtmlFetcher, create_admin_router
 from question_bank_service.config import ConfigError, Settings, load_settings
 from question_bank_service.runtime.router import create_runtime_router
 
 
-def create_app(settings: Settings | None = None) -> FastAPI:
+def create_app(
+    settings: Settings | None = None,
+    *,
+    detail_html_fetcher: DetailHtmlFetcher | None = None,
+) -> FastAPI:
     app = FastAPI(title="FE Question Bank Service")
     app.state.settings = settings
 
@@ -26,6 +31,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     if settings is not None:
         app.include_router(create_runtime_router(settings))
+        if settings.enable_admin_api:
+            app.include_router(
+                create_admin_router(settings, detail_html_fetcher=detail_html_fetcher)
+            )
 
     return app
 
