@@ -78,7 +78,7 @@ FE Question Bank Service 是一个独立题库服务，用于把 `fe_siken_quest
   Depends on: T003, T005.
   Verify: token 校验、单题刷新、校验失败响应测试。
 
-- [ ] T007 [P1] 增加格式保真 validator
+- [x] T007 [P1] 增加格式保真 validator
   Goal: 自动发现候选解析问题。
   Notes: 至少覆盖选择项数量、HTML 标签平衡、指数/上下标/overline 标记保留。
   Likely files/modules: `src/question_bank_service/scraper/validators.py`.
