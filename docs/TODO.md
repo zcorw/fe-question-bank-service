@@ -43,7 +43,7 @@ FE Question Bank Service 是一个独立题库服务，用于把 `fe_siken_quest
   Depends on: None.
   Verify: `python -m pytest` 可执行且至少有健康检查测试。
 
-- [ ] T002 [P0] 实现配置加载
+- [x] T002 [P0] 实现配置加载
   Goal: 从环境变量读取数据库路径、资产目录、只读模式和 Admin 开关。
   Notes: 配置缺失时给出明确错误；Runtime 模式默认只读。
   Likely files/modules: `src/question_bank_service/config.py`.
