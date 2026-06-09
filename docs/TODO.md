@@ -113,7 +113,7 @@ FE Question Bank Service 是一个独立题库服务，用于把 `fe_siken_quest
   Depends on: T006, T007.
   Verify: 备份文件生成，校验命令能返回非零失败码。
 
-- [ ] T012 [P1] 输出 FE-Test 改造说明文档
+- [x] T012 [P1] 输出 FE-Test 改造说明文档
   Goal: 让维护者能清楚理解 FE-Test 从直接 SQLite 读取迁移到题库服务的改造范围和切换方式。
   Notes: 文档需包含涉及文件、Provider 设计、环境变量、三条调用链新旧对比、验证命令、生产切换和回滚步骤。
   Likely files/modules: FE-Test `docs/FE_TEST_MIGRATION_GUIDE.md`.
