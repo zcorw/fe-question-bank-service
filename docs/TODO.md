@@ -106,7 +106,7 @@ FE Question Bank Service 是一个独立题库服务，用于把 `fe_siken_quest
   Depends on: T004, T006.
   Verify: 本地 compose 启动后 `/health` 正常。
 
-- [ ] T011 [P2] 增加发布和备份脚本
+- [x] T011 [P2] 增加发布和备份脚本
   Goal: Admin 写库前支持备份，发布前支持校验。
   Notes: 备份文件命名包含时间戳；校验失败时阻止发布。
   Likely files/modules: `scripts/backup_db.py`, `scripts/validate_question_bank.py`.
