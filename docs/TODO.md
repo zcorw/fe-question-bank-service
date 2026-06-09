@@ -50,7 +50,7 @@ FE Question Bank Service 是一个独立题库服务，用于把 `fe_siken_quest
   Depends on: T001.
   Verify: 覆盖默认值、缺失 DB 路径、Admin token 配置测试。
 
-- [ ] T003 [P0] 实现 SQLite repository
+- [x] T003 [P0] 实现 SQLite repository
   Goal: 封装关键词、候选题、详情、ID/URL 关联查询。
   Notes: 兼容 `questions.url = question_details.question_url`；解析 `choices_json` 和 `images_json`。
   Likely files/modules: `src/question_bank_service/db/sqlite.py`, `src/question_bank_service/db/repositories.py`.
