@@ -1,0 +1,49 @@
+services:
+  question-bank-runtime:
+    build: .
+    image: fe-question-bank-service:latest
+    container_name: question-bank-runtime
+    restart: unless-stopped
+    environment:
+      - QUESTION_DB_PATH=/app/data/fe_siken_questions.sqlite
+      - QUESTION_ASSET_ROOT=/app/public/assets/fe-siken
+      - QUESTION_BANK_READ_ONLY=true
+      - ENABLE_ADMIN_API=false
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    ports:
+      - "${QUESTION_BANK_RUNTIME_PORT:-8000}:8000"
+    volumes:
+      - "${HOST_DATA_DIR:-./data}:/app/data:ro"
+      - "${HOST_ASSET_DIR:-./public/assets/fe-siken}:/app/public/assets/fe-siken:ro"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8000/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  question-bank-admin:
+    build: .
+    image: fe-question-bank-service:latest
+    container_name: question-bank-admin
+    restart: unless-stopped
+    profiles:
+      - admin
+    environment:
+      - QUESTION_DB_PATH=/app/data/fe_siken_questions.sqlite
+      - QUESTION_ASSET_ROOT=/app/public/assets/fe-siken
+      - QUESTION_BANK_READ_ONLY=false
+      - ENABLE_ADMIN_API=true
+      - ADMIN_API_TOKEN=${ADMIN_API_TOKEN:-}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    ports:
+      - "${QUESTION_BANK_ADMIN_PORT:-8001}:8000"
+    volumes:
+      - "${HOST_DATA_DIR:-./data}:/app/data:rw"
+      - "${HOST_ASSET_DIR:-./public/assets/fe-siken}:/app/public/assets/fe-siken:rw"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8000/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
