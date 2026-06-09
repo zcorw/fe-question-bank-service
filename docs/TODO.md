@@ -64,7 +64,7 @@ FE Question Bank Service 是一个独立题库服务，用于把 `fe_siken_quest
   Depends on: T003.
   Verify: API 集成测试覆盖所有 Runtime endpoint。
 
-- [ ] T005 [P1] 迁入题目详情解析模块
+- [x] T005 [P1] 迁入题目详情解析模块
   Goal: 将当前维护项目中的详情抓取和 HTML 解析逻辑整理为可 import 模块。
   Notes: 保留指数、上下标、overline、嵌套 span 的保真逻辑。
   Likely files/modules: `src/question_bank_service/scraper/html_parser.py`, `detail_fetcher.py`, `asset_cache.py`.
