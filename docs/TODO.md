@@ -120,7 +120,7 @@ FE Question Bank Service 是一个独立题库服务，用于把 `fe_siken_quest
   Depends on: T008.
   Verify: 文档中的文件清单与实际 diff 一致，验证命令可执行。
 
-- [ ] T013 [P1] 输出当前维护项目改造说明文档
+- [x] T013 [P1] 输出当前维护项目改造说明文档
   Goal: 让维护者能清楚理解每日练习生成、题目刷新和格式校验如何改为调用题库服务。
   Notes: 文档需包含直接 SQLite/脚本调用替换范围、Runtime API 使用、Admin API 使用、保留脚本、验证步骤和服务不可用时的降级方式。
   Likely files/modules: 当前维护项目 `docs/CURRENT_PROJECT_MIGRATION_GUIDE.md`.
