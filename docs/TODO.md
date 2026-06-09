@@ -57,7 +57,7 @@ FE Question Bank Service 是一个独立题库服务，用于把 `fe_siken_quest
   Depends on: T002.
   Verify: 使用 fixture SQLite 测试所有查询。
 
-- [ ] T004 [P0] 实现 Runtime API
+- [x] T004 [P0] 实现 Runtime API
   Goal: 提供 `/health`、`/keywords`、候选题查询、单题详情、批量详情接口。
   Notes: `includeAnswer=false` 时不能返回答案和解析；batch 返回顺序应与请求 URL 顺序一致。
   Likely files/modules: `src/question_bank_service/runtime/router.py`, `runtime/service.py`, `runtime/schemas.py`.
