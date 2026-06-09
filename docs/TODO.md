@@ -92,9 +92,9 @@ FE Question Bank Service 是一个独立题库服务，用于把 `fe_siken_quest
   Depends on: T004.
   Verify: FE-Test 单元测试通过，HTTP mock 覆盖 quiz 创建、加载、提交。
 
-- [!] T009 [P1] 改造每日练习生成调用路径
+- [x] T009 [P1] 改造每日练习生成调用路径
   Goal: 当前维护项目通过 Runtime/Admin API 获取题目和刷新缺失详情。
-  Notes: BLOCKED 2026-06-09: 当前工作区未找到文档提到的当前维护项目脚本或每日练习生成入口，无法改造实际调用路径或验证生成今日练习文档。保留直接 SQLite 脚本作为回退，文档生成流程优先调用服务。
+  Notes: 新增每日练习生成 CLI，优先通过 Runtime API 读取候选题和批量详情；保留直接 SQLite 读取作为本地回退。
   Likely files/modules: 当前维护项目 daily 生成脚本或提示文档。
   Depends on: T004, T006.
   Verify: 生成一份今日练习文档，题目选项与原题格式一致。

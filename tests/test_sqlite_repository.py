@@ -167,6 +167,28 @@ def test_repository_gets_detail_by_url_and_id(question_db: Path) -> None:
     assert by_url.has_images is True
 
 
+def test_repository_accepts_legacy_object_choices_json(question_db: Path) -> None:
+    conn = sqlite3.connect(question_db)
+    conn.execute(
+        "UPDATE question_details SET choices_json = ? WHERE question_url = ?",
+        (
+            json.dumps({"ア": "legacy A", "イ": "legacy B"}, ensure_ascii=False),
+            "https://example.test/q1",
+        ),
+    )
+    conn.commit()
+    conn.close()
+
+    with open_sqlite_connection(question_db, read_only=True) as readonly_conn:
+        detail = QuestionBankRepository(readonly_conn).get_detail_by_url("https://example.test/q1")
+
+    assert detail is not None
+    assert [(choice.label, choice.text) for choice in detail.choices] == [
+        ("ア", "legacy A"),
+        ("イ", "legacy B"),
+    ]
+
+
 def test_repository_returns_batch_details_in_requested_url_order(question_db: Path) -> None:
     with open_sqlite_connection(question_db, read_only=True) as conn:
         details = QuestionBankRepository(conn).get_details_by_urls(

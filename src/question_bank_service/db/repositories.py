@@ -177,7 +177,14 @@ def _detail_from_row(row: sqlite3.Row) -> QuestionDetail:
 
 
 def _parse_choices(value: str) -> list[Choice]:
-    raw_choices = _parse_json(value, field_name="choices_json", expected_type=list)
+    raw_choices = _parse_json(value, field_name="choices_json", expected_type=(list, dict))
+    if isinstance(raw_choices, dict):
+        return [
+            Choice(label=label, text=text)
+            for label, text in raw_choices.items()
+            if isinstance(label, str) and isinstance(text, str)
+        ]
+
     choices: list[Choice] = []
     for item in raw_choices:
         if not isinstance(item, dict) or not isinstance(item.get("label"), str):
@@ -192,12 +199,17 @@ def _parse_images(value: str) -> list[dict[str, Any]]:
     return _parse_json(value, field_name="images_json", expected_type=list)
 
 
-def _parse_json(value: str, *, field_name: str, expected_type: type) -> Any:
+def _parse_json(value: str, *, field_name: str, expected_type: type | tuple[type, ...]) -> Any:
     try:
         parsed = json.loads(value)
     except json.JSONDecodeError as exc:
         raise RepositoryError(f"Invalid {field_name}: {exc.msg}") from exc
 
     if not isinstance(parsed, expected_type):
-        raise RepositoryError(f"Invalid {field_name}: expected {expected_type.__name__}")
+        expected_name = (
+            " or ".join(item.__name__ for item in expected_type)
+            if isinstance(expected_type, tuple)
+            else expected_type.__name__
+        )
+        raise RepositoryError(f"Invalid {field_name}: expected {expected_name}")
     return parsed
