@@ -85,7 +85,7 @@ FE Question Bank Service 是一个独立题库服务，用于把 `fe_siken_quest
   Depends on: T005.
   Verify: 构造错误 fixture，确保 validator 能报出明确错误类型。
 
-- [ ] T008 [P1] 添加 FE-Test HTTP Provider 设计适配
+- [x] T008 [P1] 添加 FE-Test HTTP Provider 设计适配
   Goal: 在 FE-Test 中可通过 HTTP 调用新服务，保留 SQLite Provider。
   Notes: 先设计 Provider 接口和 DTO 映射，默认不切生产。
   Likely files/modules: FE-Test `src/db/question-bank/*`, `src/quiz/*`, `src/bot/*`.
