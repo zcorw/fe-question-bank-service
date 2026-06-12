@@ -15,8 +15,10 @@ def test_docker_deployment_files_define_runtime_and_admin_modes() -> None:
     assert "QUESTION_BANK_READ_ONLY=true" in compose
     assert "ENABLE_ADMIN_API=true" in compose
     assert "QUESTION_BANK_READ_ONLY=false" in compose
-    assert "${QUESTION_BANK_RUNTIME_HOST:-127.0.0.1}:${QUESTION_BANK_RUNTIME_PORT:-8000}:8000" in compose
-    assert "${QUESTION_BANK_ADMIN_HOST:-127.0.0.1}:${QUESTION_BANK_ADMIN_PORT:-8001}:8000" in compose
+    assert 'host_ip: "${QUESTION_BANK_RUNTIME_HOST:-127.0.0.1}"' in compose
+    assert 'published: "${QUESTION_BANK_RUNTIME_PORT:-8000}"' in compose
+    assert 'host_ip: "${QUESTION_BANK_ADMIN_HOST:-127.0.0.1}"' in compose
+    assert 'published: "${QUESTION_BANK_ADMIN_PORT:-8001}"' in compose
     assert "${HOST_DATA_DIR:-./data}:/app/data:ro" in compose
     assert "${HOST_DATA_DIR:-./data}:/app/data:rw" in compose
     assert "curl -fsS http://localhost:8000/health" in compose

@@ -11,7 +11,9 @@ services:
       - ENABLE_ADMIN_API=false
       - LOG_LEVEL=${LOG_LEVEL:-info}
     ports:
-      - "${QUESTION_BANK_RUNTIME_HOST:-127.0.0.1}:${QUESTION_BANK_RUNTIME_PORT:-8000}:8000"
+      - host_ip: "${QUESTION_BANK_RUNTIME_HOST:-127.0.0.1}"
+        published: "${QUESTION_BANK_RUNTIME_PORT:-8000}"
+        target: 8000
     volumes:
       - "${HOST_DATA_DIR:-./data}:/app/data:ro"
       - "${HOST_ASSET_DIR:-./public/assets/fe-siken}:/app/public/assets/fe-siken:ro"
@@ -37,7 +39,9 @@ services:
       - ADMIN_API_TOKEN=${ADMIN_API_TOKEN:-}
       - LOG_LEVEL=${LOG_LEVEL:-info}
     ports:
-      - "${QUESTION_BANK_ADMIN_HOST:-127.0.0.1}:${QUESTION_BANK_ADMIN_PORT:-8001}:8000"
+      - host_ip: "${QUESTION_BANK_ADMIN_HOST:-127.0.0.1}"
+        published: "${QUESTION_BANK_ADMIN_PORT:-8001}"
+        target: 8000
     volumes:
       - "${HOST_DATA_DIR:-./data}:/app/data:rw"
       - "${HOST_ASSET_DIR:-./public/assets/fe-siken}:/app/public/assets/fe-siken:rw"
