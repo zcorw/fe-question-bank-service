@@ -15,6 +15,12 @@ directory `${HOST_DATA_DIR}` is mounted to `/app/data`, so the matching host fil
 is `${HOST_DATA_DIR}/fe_siken_questions.sqlite`. Override `QUESTION_DB_PATH`
 only when the SQLite file should use a different container-internal path.
 
+`QUESTION_BANK_RUNTIME_HOST` and `QUESTION_BANK_ADMIN_HOST` control the VPS host
+IP address used by Docker port publishing. Keep them at `127.0.0.1` when the
+service should only be reachable from the VPS or an internal reverse proxy. Set
+one to `0.0.0.0` only when that service should bind to all host interfaces.
+Inside the container, Uvicorn still listens on `0.0.0.0:8000`.
+
 ```bash
 docker compose up -d --build question-bank-runtime
 curl -fsS http://127.0.0.1:${QUESTION_BANK_RUNTIME_PORT:-8000}/health
