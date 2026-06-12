@@ -44,7 +44,7 @@ Move FE question images from consuming applications into FE Question Bank Servic
   Depends on: A001.
   Verify: Repository/API tests cover camelCase and snake_case image metadata, rows without images, and Markdown image references. Run `python -m pytest`.
 
-- [ ] A003 [P1] Document service-owned asset storage and backup rules
+- [x] A003 [P1] Document service-owned asset storage and backup rules
   Goal: Make operators understand that image assets belong to FE Question Bank Service and must be backed up with SQLite.
   Notes: Document that `QUESTION_ASSET_ROOT` is container-internal, `HOST_ASSET_DIR` is the VPS host directory, and both SQLite and assets are required for a complete restore.
   Likely files/modules: `README.md`, `.env.vps.example`, `docs/05_security_deployment.md`, `docs/07_testing_operations.md`.

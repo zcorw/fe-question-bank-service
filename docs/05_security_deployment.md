@@ -32,8 +32,8 @@ question-bank-runtime
 挂载：
 
 ```text
-/opt/fe-quiz-bot/data:/app/data:ro
-/opt/fe-quiz-bot/public/assets/fe-siken:/app/public/assets/fe-siken:ro
+/opt/fe-question-bank/data:/app/data:ro
+/opt/fe-question-bank/public/assets/fe-siken:/app/public/assets/fe-siken:ro
 ```
 
 ### 维护模式
@@ -48,8 +48,8 @@ question-bank-admin
 挂载：
 
 ```text
-/opt/fe-quiz-bot/data:/app/data:rw
-/opt/fe-quiz-bot/public/assets/fe-siken:/app/public/assets/fe-siken:rw
+/opt/fe-question-bank/data:/app/data:rw
+/opt/fe-question-bank/public/assets/fe-siken:/app/public/assets/fe-siken:rw
 ```
 
 ## 写操作控制
@@ -82,5 +82,15 @@ Admin 写库前应支持手动或自动备份：
 ```text
 fe_siken_questions.sqlite.YYYYMMDDHHMMSS.bak
 ```
+
+图片资产目录必须与 SQLite 一起备份和恢复：
+
+```text
+/opt/fe-question-bank/data/fe_siken_questions.sqlite
+/opt/fe-question-bank/public/assets/fe-siken/
+```
+
+SQLite 中只保存图片路径和元数据。缺少资产目录会导致题目仍能读取，
+但 `/assets/fe-siken/...` 图片请求返回 404。
 
 MVP 可以先提供 CLI 备份脚本，后续再集成到 Admin API。

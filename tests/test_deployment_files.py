@@ -36,3 +36,24 @@ def test_github_actions_workflow_tests_and_deploys_to_vps() -> None:
     assert "VPS_SSH_KEY" in workflow
     assert "docker compose up -d --build --remove-orphans" in workflow
     assert "curl -fsS http://127.0.0.1:${QUESTION_BANK_RUNTIME_PORT:-8000}/health" in workflow
+
+
+def test_asset_storage_and_backup_docs_describe_host_and_container_paths() -> None:
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    env_example = (ROOT / ".env.vps.example").read_text(encoding="utf-8")
+    security = (ROOT / "docs/05_security_deployment.md").read_text(encoding="utf-8")
+    operations = (ROOT / "docs/07_testing_operations.md").read_text(encoding="utf-8")
+
+    assert "QUESTION_ASSET_ROOT" in readme
+    assert "container-internal" in readme
+    assert "HOST_ASSET_DIR" in readme
+    assert "SQLite and assets" in readme
+    assert "QUESTION_ASSET_ROOT=/app/public/assets/fe-siken" in env_example
+    assert "HOST_ASSET_DIR=/opt/fe-question-bank/public/assets/fe-siken" in env_example
+    assert "/opt/fe-question-bank/data:/app/data:ro" in security
+    assert (
+        "/opt/fe-question-bank/public/assets/fe-siken:"
+        "/app/public/assets/fe-siken:ro"
+    ) in security
+    assert "fe_siken_questions.sqlite" in operations
+    assert "public/assets/fe-siken" in operations

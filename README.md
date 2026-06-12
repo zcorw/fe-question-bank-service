@@ -16,6 +16,17 @@ directory `${HOST_DATA_DIR}` is mounted to `/app/data`, so the matching host fil
 is `${HOST_DATA_DIR}/fe_siken_questions.sqlite`. Override `QUESTION_DB_PATH`
 only when the SQLite file should use a different container-internal path.
 
+`QUESTION_ASSET_ROOT` is the container-internal asset directory used by the
+service to serve `/assets/fe-siken/...`. In Docker Compose it is
+`/app/public/assets/fe-siken`. The VPS host directory `${HOST_ASSET_DIR}` is
+mounted to that container path, so the matching host directory is commonly
+`/opt/fe-question-bank/public/assets/fe-siken`. Keep the SQLite database and
+assets together operationally: a complete backup or restore must include both
+`${HOST_DATA_DIR}/fe_siken_questions.sqlite` and `${HOST_ASSET_DIR}`. Restoring
+only the SQLite file can leave valid question rows with broken image URLs.
+
+SQLite and assets must be managed as one restore unit.
+
 `QUESTION_BANK_RUNTIME_HOST` and `QUESTION_BANK_ADMIN_HOST` control the VPS host
 IP address used by Docker port publishing. Keep them at `127.0.0.1` when the
 service should only be reachable from the VPS or an internal reverse proxy. Set

@@ -77,3 +77,19 @@
 - Admin API 在生产默认关闭。
 - FE-Test 仍可回退 SQLite Provider。
 - fixture 测试覆盖格式保真问题。
+
+## 图片资产运维检查
+
+完整备份必须同时包含：
+
+```text
+fe_siken_questions.sqlite
+public/assets/fe-siken/
+```
+
+发布或恢复后必须确认：
+
+- SQLite 文件存在且 Runtime 可读。
+- `public/assets/fe-siken/` 目录存在。
+- 至少一个 `/assets/fe-siken/...` 图片请求返回 200。
+- 只恢复 SQLite 而未恢复图片目录时，题目文本可能正常，但图片会 404。
