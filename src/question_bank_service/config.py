@@ -19,7 +19,10 @@ class Settings:
 
 def load_settings(env: Mapping[str, str] | None = None) -> Settings:
     values = os.environ if env is None else env
-    database_path = _required_path(values, "QUESTION_DB_PATH")
+    database_path = Path(
+        _optional_non_empty(values.get("QUESTION_DB_PATH"))
+        or "/app/data/fe_siken_questions.sqlite"
+    )
     asset_root = Path(values.get("QUESTION_ASSET_ROOT", "public/assets/fe-siken"))
     read_only = _parse_bool(values.get("QUESTION_BANK_READ_ONLY"), default=True)
     enable_admin_api = _parse_bool(values.get("ENABLE_ADMIN_API"), default=False)
@@ -35,13 +38,6 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
         enable_admin_api=enable_admin_api,
         admin_api_token=admin_api_token,
     )
-
-
-def _required_path(values: Mapping[str, str], name: str) -> Path:
-    value = _optional_non_empty(values.get(name))
-    if value is None:
-        raise ConfigError(f"{name} is required")
-    return Path(value)
 
 
 def _optional_non_empty(value: str | None) -> str | None:

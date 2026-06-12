@@ -6,6 +6,16 @@ from question_bank_service.config import ConfigError, load_settings
 
 
 def test_load_settings_uses_runtime_safe_defaults() -> None:
+    settings = load_settings({})
+
+    assert settings.database_path == Path("/app/data/fe_siken_questions.sqlite")
+    assert settings.asset_root == Path("public/assets/fe-siken")
+    assert settings.read_only is True
+    assert settings.enable_admin_api is False
+    assert settings.admin_api_token is None
+
+
+def test_load_settings_allows_database_path_override() -> None:
     settings = load_settings(
         {
             "QUESTION_DB_PATH": "data/fe_siken_questions.sqlite",
@@ -13,15 +23,6 @@ def test_load_settings_uses_runtime_safe_defaults() -> None:
     )
 
     assert settings.database_path == Path("data/fe_siken_questions.sqlite")
-    assert settings.asset_root == Path("public/assets/fe-siken")
-    assert settings.read_only is True
-    assert settings.enable_admin_api is False
-    assert settings.admin_api_token is None
-
-
-def test_load_settings_requires_database_path() -> None:
-    with pytest.raises(ConfigError, match="QUESTION_DB_PATH is required"):
-        load_settings({})
 
 
 def test_load_settings_requires_admin_token_when_admin_api_enabled() -> None:

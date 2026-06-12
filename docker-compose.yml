@@ -5,7 +5,7 @@ services:
     container_name: question-bank-runtime
     restart: unless-stopped
     environment:
-      - QUESTION_DB_PATH=/app/data/fe_siken_questions.sqlite
+      - QUESTION_DB_PATH=${QUESTION_DB_PATH:-/app/data/fe_siken_questions.sqlite}
       - QUESTION_ASSET_ROOT=/app/public/assets/fe-siken
       - QUESTION_BANK_READ_ONLY=true
       - ENABLE_ADMIN_API=false
@@ -30,7 +30,7 @@ services:
     profiles:
       - admin
     environment:
-      - QUESTION_DB_PATH=/app/data/fe_siken_questions.sqlite
+      - QUESTION_DB_PATH=${QUESTION_DB_PATH:-/app/data/fe_siken_questions.sqlite}
       - QUESTION_ASSET_ROOT=/app/public/assets/fe-siken
       - QUESTION_BANK_READ_ONLY=false
       - ENABLE_ADMIN_API=true

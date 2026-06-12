@@ -9,6 +9,12 @@ FastAPI service for reading and maintaining the FE question bank SQLite database
 3. Put cached assets under `${HOST_ASSET_DIR}` when image assets are available.
 4. Start runtime:
 
+`QUESTION_DB_PATH` is optional. By default the service reads
+`/app/data/fe_siken_questions.sqlite` inside the container. The VPS host
+directory `${HOST_DATA_DIR}` is mounted to `/app/data`, so the matching host file
+is `${HOST_DATA_DIR}/fe_siken_questions.sqlite`. Override `QUESTION_DB_PATH`
+only when the SQLite file should use a different container-internal path.
+
 ```bash
 docker compose up -d --build question-bank-runtime
 curl -fsS http://127.0.0.1:${QUESTION_BANK_RUNTIME_PORT:-8000}/health
