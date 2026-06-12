@@ -30,7 +30,7 @@ Move FE question images from consuming applications into FE Question Bank Servic
 
 ## Development TodoList
 
-- [ ] A001 [P0] Add static asset serving to FE Question Bank Service
+- [x] A001 [P0] Add static asset serving to FE Question Bank Service
   Goal: Serve cached question images from `QUESTION_ASSET_ROOT` at `/assets/fe-siken/...`.
   Notes: Mount FastAPI `StaticFiles` only for the configured asset root. Missing files should return normal 404 responses. Runtime and Admin containers already mount the asset directory with different read/write modes.
   Likely files/modules: `src/question_bank_service/app.py`, `src/question_bank_service/config.py`, `tests/`.

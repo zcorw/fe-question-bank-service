@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
 from question_bank_service.admin.router import DetailHtmlFetcher, create_admin_router
 from question_bank_service.config import ConfigError, Settings, load_settings
@@ -30,6 +31,11 @@ def create_app(
         }
 
     if settings is not None:
+        app.mount(
+            "/assets/fe-siken",
+            StaticFiles(directory=settings.asset_root, check_dir=False),
+            name="fe-siken-assets",
+        )
         app.include_router(create_runtime_router(settings))
         if settings.enable_admin_api:
             app.include_router(
