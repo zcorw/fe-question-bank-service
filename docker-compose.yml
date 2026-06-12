@@ -17,6 +17,8 @@ services:
     volumes:
       - "${HOST_DATA_DIR:-./data}:/app/data:ro"
       - "${HOST_ASSET_DIR:-./public/assets/fe-siken}:/app/public/assets/fe-siken:ro"
+    networks:
+      - fe-shared
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://localhost:8000/health || exit 1"]
       interval: 30s
@@ -45,9 +47,15 @@ services:
     volumes:
       - "${HOST_DATA_DIR:-./data}:/app/data:rw"
       - "${HOST_ASSET_DIR:-./public/assets/fe-siken}:/app/public/assets/fe-siken:rw"
+    networks:
+      - fe-shared
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://localhost:8000/health || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 10s
+
+networks:
+  fe-shared:
+    external: true

@@ -7,7 +7,8 @@ FastAPI service for reading and maintaining the FE question bank SQLite database
 1. Copy `.env.vps.example` to `.env` on the VPS and adjust paths and ports.
 2. Put `fe_siken_questions.sqlite` under `${HOST_DATA_DIR}`.
 3. Put cached assets under `${HOST_ASSET_DIR}` when image assets are available.
-4. Start runtime:
+4. Create the shared Docker network used by FE-Test and host consumers.
+5. Start runtime:
 
 `QUESTION_DB_PATH` is optional. By default the service reads
 `/app/data/fe_siken_questions.sqlite` inside the container. The VPS host
@@ -20,6 +21,14 @@ IP address used by Docker port publishing. Keep them at `127.0.0.1` when the
 service should only be reachable from the VPS or an internal reverse proxy. Set
 one to `0.0.0.0` only when that service should bind to all host interfaces.
 Inside the container, Uvicorn still listens on `0.0.0.0:8000`.
+
+The Compose stack joins the external `fe-shared` Docker network so FE-Test
+containers can call `http://question-bank-runtime:8000`. Create it once on each
+new VPS before starting Compose:
+
+```bash
+docker network inspect fe-shared >/dev/null 2>&1 || docker network create fe-shared
+```
 
 ```bash
 docker compose up -d --build question-bank-runtime

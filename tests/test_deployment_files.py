@@ -21,6 +21,8 @@ def test_docker_deployment_files_define_runtime_and_admin_modes() -> None:
     assert 'published: "${QUESTION_BANK_ADMIN_PORT:-8001}"' in compose
     assert "${HOST_DATA_DIR:-./data}:/app/data:ro" in compose
     assert "${HOST_DATA_DIR:-./data}:/app/data:rw" in compose
+    assert "fe-shared:" in compose
+    assert "external: true" in compose
     assert "curl -fsS http://localhost:8000/health" in compose
 
 
