@@ -163,7 +163,7 @@ def test_repository_gets_detail_by_url_and_id(question_db: Path) -> None:
     assert by_url.question_id == 1
     assert by_url.source_url == "https://example.test/q1"
     assert by_url.choices[0].label == "ア"
-    assert by_url.images == [{"publicPath": "/assets/q1.png"}]
+    assert by_url.images == [{"publicPath": "/assets/fe-siken/q1.png"}]
     assert by_url.has_images is True
 
 

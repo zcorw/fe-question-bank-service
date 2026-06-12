@@ -37,7 +37,7 @@ Move FE question images from consuming applications into FE Question Bank Servic
   Depends on: None.
   Verify: Add a fixture image under a temporary asset root and assert `GET /assets/fe-siken/<file>` returns the image bytes; assert a missing image returns 404. Run `python -m pytest`.
 
-- [ ] A002 [P0] Normalize runtime image metadata in API responses
+- [x] A002 [P0] Normalize runtime image metadata in API responses
   Goal: Make Runtime API responses expose stable image paths that clients can consume without knowing local filesystem layout.
   Notes: Preserve existing `questionText` Markdown. Normalize `images_json` entries so clients can rely on `publicPath` under `/assets/fe-siken/...`; do not expose host filesystem paths. If legacy DB rows contain `public_path` or `local_path`, map them to the API schema consistently.
   Likely files/modules: `src/question_bank_service/db/repositories.py`, `src/question_bank_service/runtime/schemas.py`, `src/question_bank_service/runtime/service.py`, `tests/`.

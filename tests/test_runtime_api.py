@@ -77,6 +77,26 @@ def test_runtime_detail_endpoints_include_answer_when_requested(tmp_path: Path) 
     assert response.json()["explanation"] == "指数を保つ"
 
 
+def test_runtime_detail_normalizes_image_metadata(tmp_path: Path) -> None:
+    db_path = _create_runtime_db(tmp_path)
+    client = TestClient(create_app(settings=_settings(db_path)))
+
+    response = client.get("/questions/1")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["hasImages"] is True
+    assert body["images"] == [
+        {
+            "publicPath": "/assets/fe-siken/r07_haru/q28.png",
+            "alt": "diagram",
+        },
+        {
+            "publicPath": "/assets/fe-siken/q29.png",
+        },
+    ]
+
+
 def test_runtime_batch_details_preserve_request_order(tmp_path: Path) -> None:
     db_path = _create_runtime_db(tmp_path)
     client = TestClient(create_app(settings=_settings(db_path)))
@@ -209,8 +229,20 @@ def _create_runtime_db(tmp_path: Path) -> Path:
                 "ア",
                 "指数を保つ",
                 "2026-01-02",
-                "[]",
-                0,
+                json.dumps(
+                    [
+                        {
+                            "public_path": "assets/fe-siken/r07_haru/q28.png",
+                            "local_path": "/app/public/assets/fe-siken/r07_haru/q28.png",
+                            "alt": "diagram",
+                        },
+                        {
+                            "localPath": "C:/cache/q29.png",
+                        },
+                    ],
+                    ensure_ascii=False,
+                ),
+                1,
             ),
             (
                 "https://example.test/q2",

@@ -3,6 +3,8 @@ import sqlite3
 from dataclasses import dataclass
 from typing import Any
 
+ASSET_PUBLIC_MARKER = "assets/fe-siken/"
+
 
 class RepositoryError(ValueError):
     """Raised when persisted question bank data is malformed."""
@@ -196,7 +198,56 @@ def _parse_choices(value: str) -> list[Choice]:
 
 
 def _parse_images(value: str) -> list[dict[str, Any]]:
-    return _parse_json(value, field_name="images_json", expected_type=list)
+    raw_images = _parse_json(value, field_name="images_json", expected_type=list)
+    normalized_images: list[dict[str, Any]] = []
+    for item in raw_images:
+        if not isinstance(item, dict):
+            raise RepositoryError("Invalid images_json: each image requires an object")
+        normalized_images.append(_normalize_image_metadata(item))
+    return normalized_images
+
+
+def _normalize_image_metadata(item: dict[str, Any]) -> dict[str, Any]:
+    public_path = item.get("publicPath") or item.get("public_path")
+    if not isinstance(public_path, str) or not public_path.strip():
+        local_path = item.get("localPath") or item.get("local_path")
+        public_path = _public_path_from_local_path(local_path)
+
+    normalized: dict[str, Any] = {}
+    if isinstance(public_path, str) and public_path.strip():
+        normalized["publicPath"] = _normalize_public_asset_path(public_path)
+
+    for key, value in item.items():
+        if key in {"publicPath", "public_path", "localPath", "local_path"}:
+            continue
+        normalized[key] = value
+
+    return normalized
+
+
+def _public_path_from_local_path(value: Any) -> str | None:
+    if not isinstance(value, str):
+        return None
+    normalized = value.replace("\\", "/")
+    marker_index = normalized.find(ASSET_PUBLIC_MARKER)
+    if marker_index != -1:
+        return normalized[marker_index:]
+
+    file_name = normalized.rstrip("/").rsplit("/", maxsplit=1)[-1]
+    return file_name or None
+
+
+def _normalize_public_asset_path(value: str) -> str:
+    normalized = value.replace("\\", "/").strip()
+    marker_index = normalized.find(ASSET_PUBLIC_MARKER)
+    if marker_index != -1:
+        normalized = normalized[marker_index:]
+        return f"/{normalized.lstrip('/')}"
+
+    normalized = normalized.lstrip("/")
+    if normalized.startswith("assets/"):
+        normalized = normalized.removeprefix("assets/")
+    return f"/{ASSET_PUBLIC_MARKER}{normalized}"
 
 
 def _parse_json(value: str, *, field_name: str, expected_type: type | tuple[type, ...]) -> Any:
