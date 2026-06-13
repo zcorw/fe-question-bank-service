@@ -58,7 +58,7 @@ Move FE question images from consuming applications into FE Question Bank Servic
   Depends on: A001.
   Verify: With `QUESTION_BANK_SERVICE_URL=http://question-bank-runtime:8000` or a local service URL, a request to FE-Test `/assets/fe-siken/<file>` returns the image bytes. Run FE-Test `pnpm typecheck`, `pnpm lint`, `pnpm test`.
 
-- [ ] A005 [P1] Ensure FE-Test Markdown rendering uses proxied relative image paths
+- [x] A005 [P1] Ensure FE-Test Markdown rendering uses proxied relative image paths
   Goal: Render question Markdown images through FE-Test's own `/assets/fe-siken/...` route instead of direct DB/app-local files or Docker-internal service URLs.
   Notes: Keep existing layout preservation behavior. If the service returns absolute internal URLs, rewrite them to relative asset paths before rendering. Prefer keeping question bank API output relative to avoid browser DNS problems.
   Likely files/modules: FE-Test Markdown rendering components, question DTO mapping, HTTP provider tests.
