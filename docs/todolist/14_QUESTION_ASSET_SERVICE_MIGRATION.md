@@ -65,7 +65,7 @@ Move FE question images from consuming applications into FE Question Bank Servic
   Depends on: A002, A004.
   Verify: Unit/component test renders a Markdown image and asserts the final `img.src` points to `/assets/fe-siken/...`. Run relevant FE-Test Playwright test if the rendered question page is affected.
 
-- [ ] A006 [P1] Update FE-Test deployment configuration for asset proxy mode
+- [x] A006 [P1] Update FE-Test deployment configuration for asset proxy mode
   Goal: Remove FE-Test's need to mount or manage question image cache files directly.
   Notes: Keep `QUESTION_BANK_SERVICE_URL` pointed at `http://question-bank-runtime:8000` inside Docker Compose. Document that image requests are browser-facing through FE-Test, service-facing through the shared Docker network.
   Likely files/modules: FE-Test `deploy/docker-compose.yml`, FE-Test `.env.example` or deployment docs.
