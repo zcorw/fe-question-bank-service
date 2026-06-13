@@ -72,7 +72,7 @@ Move FE question images from consuming applications into FE Question Bank Servic
   Depends on: A004, A005.
   Verify: `docker compose config` succeeds. FE-Test container can fetch the question bank runtime health endpoint and proxy one image.
 
-- [ ] A007 [P1] Add end-to-end verification for a question with an image
+- [x] A007 [P1] Add end-to-end verification for a question with an image
   Goal: Prove a quiz question containing an image renders correctly without FE-Test reading local image files.
   Notes: Use a local fixture or a seeded test image. The test should assert the rendered question contains an image, the image request succeeds, and no direct SQLite/file image access is required by FE-Test.
   Likely files/modules: FE-Test Playwright tests, fixture setup, question bank service fixture data.
