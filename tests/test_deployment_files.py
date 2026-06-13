@@ -66,3 +66,19 @@ def test_asset_storage_and_backup_docs_describe_host_and_container_paths() -> No
     ) in security
     assert "fe_siken_questions.sqlite" in operations
     assert "public/assets/fe-siken" in operations
+
+
+def test_asset_migration_runbook_documents_safe_existing_vps_migration() -> None:
+    migration = (ROOT / "docs/CURRENT_PROJECT_MIGRATION_GUIDE.md").read_text(
+        encoding="utf-8"
+    )
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+
+    assert "Existing VPS Asset Migration" in migration
+    assert "rsync -a --dry-run" in migration
+    assert "find \"${OLD_ASSET_DIR}\" -type f | wc -l" in migration
+    assert "find \"${HOST_ASSET_DIR}\" -type f | wc -l" in migration
+    assert "/assets/fe-siken/" in migration
+    assert "Do not delete" in migration
+    assert "question-bank-runtime" in migration
+    assert "Existing VPS Asset Migration" in readme

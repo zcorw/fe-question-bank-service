@@ -214,3 +214,67 @@ python -m compileall -q src tests scripts
 
 The generated Markdown should contain one question heading, question text, answer
 choices, and a source URL.
+
+## Existing VPS Asset Migration
+
+Use this checklist when an existing VPS already has question images under an
+application-owned directory such as `/opt/fe-quiz-bot/assets/fe-siken/`.
+The goal is to copy those files into FE Question Bank Service storage without
+deleting the original files until runtime verification passes.
+
+Set paths for the current host:
+
+```bash
+OLD_ASSET_DIR=/opt/fe-quiz-bot/assets/fe-siken
+HOST_ASSET_DIR=/opt/fe-question-bank/public/assets/fe-siken
+```
+
+Create the destination and compare file counts:
+
+```bash
+sudo mkdir -p "${HOST_ASSET_DIR}"
+find "${OLD_ASSET_DIR}" -type f | wc -l
+find "${HOST_ASSET_DIR}" -type f | wc -l
+```
+
+Preview the copy first:
+
+```bash
+rsync -a --dry-run "${OLD_ASSET_DIR}/" "${HOST_ASSET_DIR}/"
+```
+
+If the dry run looks correct, copy the files:
+
+```bash
+rsync -a "${OLD_ASSET_DIR}/" "${HOST_ASSET_DIR}/"
+find "${OLD_ASSET_DIR}" -type f | wc -l
+find "${HOST_ASSET_DIR}" -type f | wc -l
+```
+
+Restart or deploy FE Question Bank Service, then verify the runtime container
+can serve a known image:
+
+```bash
+docker compose up -d --build question-bank-runtime
+curl -fsS "http://127.0.0.1:${QUESTION_BANK_RUNTIME_PORT:-8000}/assets/fe-siken/<known-image-path>" --output /tmp/question-asset-check
+```
+
+If FE-Test is already connected to the shared Docker network, verify the public
+browser path through FE-Test as well:
+
+```bash
+curl -fsS "https://<fe-test-domain>/assets/fe-siken/<known-image-path>" --output /tmp/fe-test-asset-check
+```
+
+Do not delete `${OLD_ASSET_DIR}` during the same maintenance window. Keep it as
+a rollback source until:
+
+1. `question-bank-runtime` serves `/assets/fe-siken/...`.
+2. FE-Test renders a question with an image through its own `/assets/fe-siken/...`
+   proxy path.
+3. SQLite and `${HOST_ASSET_DIR}` have both been included in the backup plan.
+
+Rollback is file-copy only: point FE-Test back to its previous image setup or
+copy the old files from `${OLD_ASSET_DIR}` again. Do not expose
+`question-bank-runtime` publicly just to make browser image loading work; use
+the FE-Test proxy route instead.

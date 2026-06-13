@@ -79,7 +79,7 @@ Move FE question images from consuming applications into FE Question Bank Servic
   Depends on: A004, A005.
   Verify: Run FE-Test `pnpm test:e2e` or the narrowed Playwright command for the quiz detail page.
 
-- [ ] A008 [P2] Add operational migration checklist for existing VPS assets
+- [x] A008 [P2] Add operational migration checklist for existing VPS assets
   Goal: Provide a safe manual path to move existing image files from FE-Test or other app directories into FE Question Bank Service storage.
   Notes: Include commands to create the asset directory, copy files, verify counts, restart the service, and test one image through FE-Test. Do not delete old image files until verification passes.
   Likely files/modules: `docs/CURRENT_PROJECT_MIGRATION_GUIDE.md`, `README.md`, FE-Test migration docs.

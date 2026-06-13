@@ -55,6 +55,12 @@ docker compose --profile admin up -d --build question-bank-admin
 Runtime mounts database and assets read-only. Admin mounts them read-write and requires
 `ADMIN_API_TOKEN`.
 
+For existing VPS installs that already have images under a consumer app
+directory, follow the **Existing VPS Asset Migration** checklist in
+`docs/CURRENT_PROJECT_MIGRATION_GUIDE.md`. Copy assets into `${HOST_ASSET_DIR}`,
+verify `/assets/fe-siken/...` through `question-bank-runtime` and FE-Test, and
+do not delete the old asset directory until verification and backups are done.
+
 ## GitHub Actions Deployment
 
 The workflow in `.github/workflows/deploy.yml` runs tests and lint, then deploys to the VPS over SSH.
