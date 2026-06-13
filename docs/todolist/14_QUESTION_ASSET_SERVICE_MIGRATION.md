@@ -51,7 +51,7 @@ Move FE question images from consuming applications into FE Question Bank Servic
   Depends on: A001.
   Verify: Documentation includes local and VPS path examples and backup/restore checklist.
 
-- [ ] A004 [P0] Add FE-Test browser-facing asset proxy
+- [x] A004 [P0] Add FE-Test browser-facing asset proxy
   Goal: Let browsers load `/assets/fe-siken/...` from the FE-Test domain while FE-Test fetches the real file from `QUESTION_BANK_SERVICE_URL`.
   Notes: The proxy must reject paths outside `/assets/fe-siken/`, preserve image content type where possible, and return upstream 404s clearly. It must not require Telegram credentials.
   Likely files/modules: FE-Test `src/app/assets/fe-siken/[...path]/route.ts` or equivalent route handler, FE-Test config/env modules, tests.
