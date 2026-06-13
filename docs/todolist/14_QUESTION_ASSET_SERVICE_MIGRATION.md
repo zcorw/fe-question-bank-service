@@ -86,7 +86,7 @@ Move FE question images from consuming applications into FE Question Bank Servic
   Depends on: A003, A006.
   Verify: Checklist includes rollback notes and does not require exposing question-bank-runtime publicly.
 
-- [ ] A009 [P2] Add Docker Compose verification for assets
+- [x] A009 [P2] Add Docker Compose verification for assets
   Goal: Confirm the service can serve mounted assets in Docker with runtime read-only and admin read-write mounts.
   Notes: Use a fixture image under `HOST_ASSET_DIR` and request it from the runtime container or host-published runtime port. Keep database files out of git.
   Likely files/modules: `docker-compose.yml`, `README.md`, optional `scripts/validate_deploy_assets.*`.
