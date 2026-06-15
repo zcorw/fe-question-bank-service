@@ -2,6 +2,11 @@ from pydantic import BaseModel, Field
 
 
 class CandidateSearchRequest(BaseModel):
+    exam_part: str = Field(default="科目A", alias="examPart")
+    keywords: list[str] | None = None
+    topic_tags: list[str] | None = Field(default=None, alias="topicTags")
+    knowledge_points: list[str] | None = Field(default=None, alias="knowledgePoints")
+    syllabus_area: str | None = Field(default=None, alias="syllabusArea")
     categories: list[str] | None = None
     topic: str | None = None
     url: str | None = None

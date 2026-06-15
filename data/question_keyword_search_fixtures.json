@@ -1,0 +1,124 @@
+{
+  "version": 1,
+  "language": "ja",
+  "generatedAt": "2026-06-15T01:45:06.966590+00:00",
+  "fixtures": [
+    {
+      "query": {
+        "examPart": "科目A",
+        "keywords": [
+          "トランザクション処理"
+        ],
+        "topicTags": [
+          "transaction"
+        ],
+        "limit": 5
+      },
+      "expectedAnyQuestionUrls": [
+        "https://www.fe-siken.com/kakomon/06_haru/a7.html",
+        "https://www.fe-siken.com/kakomon/05_haru/a7.html",
+        "https://www.fe-siken.com/kakomon/04_menjo/q29.html",
+        "https://www.fe-siken.com/kakomon/03_menjo/q27.html",
+        "https://www.fe-siken.com/kakomon/03_menjo/q28.html"
+      ],
+      "mustNotReturnDefaultUnmatchedQuestions": true,
+      "notes": "transaction fixture generated from existing category トランザクション処理."
+    },
+    {
+      "query": {
+        "examPart": "科目A",
+        "keywords": [
+          "データ操作"
+        ],
+        "topicTags": [
+          "sql"
+        ],
+        "limit": 5
+      },
+      "expectedAnyQuestionUrls": [
+        "https://www.fe-siken.com/kakomon/07_haru/a6.html",
+        "https://www.fe-siken.com/kakomon/sample/a21.html",
+        "https://www.fe-siken.com/kakomon/sample/a24.html",
+        "https://www.fe-siken.com/kakomon/04_menjo/q26.html",
+        "https://www.fe-siken.com/kakomon/04_menjo/q28.html"
+      ],
+      "mustNotReturnDefaultUnmatchedQuestions": true,
+      "notes": "sql fixture generated from existing category データ操作."
+    },
+    {
+      "query": {
+        "examPart": "科目A",
+        "keywords": [
+          "情報セキュリティ"
+        ],
+        "topicTags": [
+          "security"
+        ],
+        "limit": 5
+      },
+      "expectedAnyQuestionUrls": [
+        "https://www.fe-siken.com/kakomon/07_haru/a9.html",
+        "https://www.fe-siken.com/kakomon/sample/a30.html",
+        "https://www.fe-siken.com/kakomon/sample/a31.html",
+        "https://www.fe-siken.com/kakomon/sample/a32.html",
+        "https://www.fe-siken.com/kakomon/04_menjo/q36.html"
+      ],
+      "mustNotReturnDefaultUnmatchedQuestions": true,
+      "notes": "security fixture generated from existing category 情報セキュリティ."
+    },
+    {
+      "query": {
+        "examPart": "科目A",
+        "keywords": [
+          "通信プロトコル"
+        ],
+        "topicTags": [
+          "network"
+        ],
+        "limit": 5
+      },
+      "expectedAnyQuestionUrls": [
+        "https://www.fe-siken.com/kakomon/sample/a28.html",
+        "https://www.fe-siken.com/kakomon/sample/a29.html",
+        "https://www.fe-siken.com/kakomon/04_menjo/q30.html",
+        "https://www.fe-siken.com/kakomon/03_menjo/q31.html",
+        "https://www.fe-siken.com/kakomon/03_menjo/q34.html"
+      ],
+      "mustNotReturnDefaultUnmatchedQuestions": true,
+      "notes": "network_protocol fixture generated from existing category 通信プロトコル."
+    },
+    {
+      "query": {
+        "examPart": "科目A",
+        "keywords": [
+          "アルゴリズム"
+        ],
+        "topicTags": [
+          "algorithm"
+        ],
+        "limit": 5
+      },
+      "expectedAnyQuestionUrls": [
+        "https://www.fe-siken.com/kakomon/06_haru/a2.html",
+        "https://www.fe-siken.com/kakomon/sample/a2.html",
+        "https://www.fe-siken.com/kakomon/sample/a6.html",
+        "https://www.fe-siken.com/kakomon/sample/a8.html",
+        "https://www.fe-siken.com/kakomon/04_menjo/q7.html"
+      ],
+      "mustNotReturnDefaultUnmatchedQuestions": true,
+      "notes": "algorithm fixture generated from existing category アルゴリズム."
+    },
+    {
+      "query": {
+        "examPart": "科目A",
+        "keywords": [
+          "__NO_SUCH_FE_TOPIC__"
+        ],
+        "limit": 5
+      },
+      "expectedAnyQuestionUrls": [],
+      "mustReturnShortage": true,
+      "mustNotReturnDefaultUnmatchedQuestions": true
+    }
+  ]
+}

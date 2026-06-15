@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException, Query
 from question_bank_service.config import Settings
 from question_bank_service.db.repositories import QuestionBankRepository
 from question_bank_service.db.sqlite import open_sqlite_connection
+from question_bank_service.runtime.keyword_index import KeywordIndex
 from question_bank_service.runtime.schemas import BatchDetailRequest, CandidateSearchRequest
 from question_bank_service.runtime.service import RuntimeService
 
@@ -12,13 +13,19 @@ def create_runtime_router(settings: Settings) -> APIRouter:
 
     def service() -> RuntimeService:
         connection = open_sqlite_connection(settings.database_path, read_only=settings.read_only)
-        return RuntimeService(QuestionBankRepository(connection), close=connection.close)
+        return RuntimeService(
+            QuestionBankRepository(connection),
+            keyword_index=KeywordIndex.from_files(
+                settings.keyword_taxonomy_path,
+                settings.question_topic_mappings_path,
+            ),
+            close=connection.close,
+        )
 
     @router.get("/keywords")
-    def keywords() -> dict[str, list[str]]:
+    def keywords() -> dict[str, object]:
         with service() as runtime:
-            result = runtime.list_keywords()
-        return {"categories": result.categories, "topics": result.topics}
+            return runtime.list_keyword_taxonomy()
 
     @router.get("/questions/candidates")
     def candidates(
@@ -41,9 +48,25 @@ def create_runtime_router(settings: Settings) -> APIRouter:
             ]
 
     @router.post("/questions/candidates/search")
-    def search_candidates(request: CandidateSearchRequest) -> list[dict[str, object]]:
+    def search_candidates(request: CandidateSearchRequest) -> dict[str, object]:
         with service() as runtime:
-            return [
+            if (
+                request.keywords
+                or request.topic_tags
+                or request.knowledge_points
+                or request.syllabus_area
+            ):
+                return runtime.find_keyword_candidates(
+                    exam_part=request.exam_part,
+                    keywords=request.keywords or [],
+                    topic_tags=request.topic_tags or [],
+                    knowledge_points=request.knowledge_points or [],
+                    syllabus_area=request.syllabus_area,
+                    limit=request.limit,
+                    offset=request.offset,
+                )
+
+            questions = [
                 runtime.candidate_to_response(candidate)
                 for candidate in runtime.find_candidates(
                     categories=request.categories,
@@ -53,6 +76,17 @@ def create_runtime_router(settings: Settings) -> APIRouter:
                     offset=request.offset,
                 )
             ]
+            response: dict[str, object] = {
+                "questions": questions,
+                "totalMatched": len(questions),
+            }
+            if len(questions) < request.limit:
+                response["shortage"] = {
+                    "requested": request.limit,
+                    "returned": len(questions),
+                    "reason": "not_enough_topic_matches",
+                }
+            return response
 
     @router.get("/questions/by-url")
     def detail_by_url(

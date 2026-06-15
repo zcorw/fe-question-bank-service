@@ -1,18 +1,13 @@
-# API 规格
-
-## 设计原则
-
-- Runtime API 默认只读。
-- Admin API 需要 `Authorization: Bearer <token>`。
-- 批量读取优先，避免 FE-Test 每次加载 20 道题产生 20 次 HTTP 请求。
-- 对外返回 `questionId`，但内部兼容 `question_url` 关联。
-- 答案和解析按调用场景控制返回。
+# API Specification
 
 ## Runtime API
 
+Runtime API is read-only by default. Consumers must call the HTTP API and must
+not read the SQLite database directly.
+
 ### GET /health
 
-返回服务状态、数据库是否可读。
+Returns service and database readiness.
 
 ```json
 {
@@ -24,20 +19,32 @@
 
 ### GET /keywords
 
-返回题库分类与主题。
+Returns the searchable keyword taxonomy loaded from
+`data/question_keyword_taxonomy.json`.
 
 ```json
 {
-  "categories": ["基礎理論"],
-  "topics": ["論理演算"]
+  "version": 1,
+  "language": "ja",
+  "tags": [
+    {
+      "id": "transaction",
+      "level": "topicTag",
+      "displayNameJa": "トランザクション処理",
+      "aliasesJa": ["トランザクション処理"],
+      "aliasesEn": ["transaction", "lock", "acid"],
+      "parentId": "database",
+      "syllabusArea": "database"
+    }
+  ]
 }
 ```
 
 ### GET /questions/candidates
 
-查询候选题。
+Legacy candidate query endpoint.
 
-Query 参数：
+Query parameters:
 
 - `category`
 - `topic`
@@ -45,35 +52,73 @@ Query 参数：
 - `limit`
 - `offset`
 
+Responses include question metadata. If keyword mapping JSON is available,
+items also include:
+
+- `primaryTag`
+- `topicTags`
+- `knowledgePoints`
+- `syllabusArea`
+
 ### POST /questions/candidates/search
 
-支持多分类查询。
+Searches candidates through the generated keyword mapping JSON. This endpoint
+does not fall back to default ordered questions when no keyword matches.
+
+Request:
 
 ```json
 {
-  "categories": ["基礎理論", "アルゴリズム"],
-  "topic": "論理演算",
-  "limit": 100
+  "examPart": "科目A",
+  "keywords": ["トランザクション"],
+  "topicTags": ["transaction"],
+  "knowledgePoints": [],
+  "syllabusArea": "database",
+  "limit": 10,
+  "offset": 0
 }
 ```
 
+Response:
+
+```json
+{
+  "questions": [],
+  "totalMatched": 0,
+  "shortage": {
+    "requested": 10,
+    "returned": 0,
+    "reason": "no_topic_matches"
+  }
+}
+```
+
+`shortage.reason` is:
+
+- `no_topic_matches` when no question matches the requested keyword/tag.
+- `not_enough_topic_matches` when fewer questions exist than requested.
+
+Legacy fields `categories`, `topic`, and `url` are still accepted for older
+callers, but new consumers should use `keywords`, `topicTags`,
+`knowledgePoints`, and `syllabusArea`.
+
 ### GET /questions/by-url
 
-按 `questionUrl` 读取详情。
+Reads one question detail by URL.
 
-Query 参数：
+Query parameters:
 
 - `url`
-- `includeAnswer`，默认 `false`
-- `includeExplanation`，默认跟随 `includeAnswer`
+- `includeAnswer`, default `false`
+- `includeExplanation`, default follows `includeAnswer`
 
 ### GET /questions/{id}
 
-按 `questions.id` 读取详情。服务内部通过 `questions.url = question_details.question_url` 关联。
+Reads one question detail by internal `questions.id`.
 
 ### POST /questions/details/batch
 
-批量读取详情。
+Reads details for multiple question URLs while preserving request order.
 
 ```json
 {
@@ -85,11 +130,37 @@ Query 参数：
 }
 ```
 
+Each returned item includes keyword metadata when a mapping exists:
+
+```json
+{
+  "questionUrl": "https://www.fe-siken.com/kakomon/14_aki/q7.html",
+  "topicTags": ["transaction"],
+  "knowledgePoints": ["transaction_atomicity"],
+  "syllabusArea": "database",
+  "primaryTag": "transaction_atomicity"
+}
+```
+
+## Keyword Data Files
+
+Runtime reads keyword data from:
+
+- `QUESTION_KEYWORD_TAXONOMY_PATH`, default `data/question_keyword_taxonomy.json`
+- `QUESTION_TOPIC_MAPPINGS_PATH`, default `data/question_topic_mappings.json`
+
+In Docker Compose, the repository `data/` directory is mounted to `/app/data`.
+Keep the generated JSON files together with `fe_siken_questions.sqlite` on the
+host data directory.
+
 ## Admin API
+
+Admin API is enabled only when `ENABLE_ADMIN_API=true` and requires
+`Authorization: Bearer <ADMIN_API_TOKEN>`.
 
 ### POST /admin/questions/refresh
 
-刷新单题详情。
+Refreshes one question detail.
 
 ```json
 {
@@ -100,18 +171,18 @@ Query 参数：
 
 ### POST /admin/questions/refresh-missing
 
-补齐缺失详情。
+Backfills missing question details.
 
 ```json
 {
   "limit": 100,
-  "sourcePageLabel": "令和6年秋期"
+  "sourcePageLabel": "令和6年秋"
 }
 ```
 
 ### POST /admin/questions/validate-cache
 
-校验题目缓存。
+Validates cached question details.
 
 ```json
 {
@@ -122,17 +193,13 @@ Query 参数：
 }
 ```
 
-### POST /admin/questions/rebuild-index
+## Error Codes
 
-重建 `questions` 索引表。该接口风险高，MVP 可只在本地启用。
-
-## 错误码
-
-| HTTP 状态 | code | 含义 |
-|---|---|---|
-| 400 | invalid_request | 参数无效 |
-| 401 | unauthorized | Admin token 缺失或错误 |
-| 404 | question_not_found | 题目不存在 |
-| 409 | write_locked | 写操作正在执行 |
-| 422 | parse_failed | 原站 HTML 解析失败 |
-| 500 | database_error | SQLite 读取或写入失败 |
+| HTTP | code | Meaning |
+| --- | --- | --- |
+| 400 | `invalid_request` | Invalid request |
+| 401 | `unauthorized` | Missing or invalid Admin token |
+| 404 | `question_not_found` | Question detail does not exist |
+| 409 | `write_locked` | Write operation is locked |
+| 422 | `parse_failed` | Source HTML parse failed |
+| 500 | `database_error` | SQLite read/write failed |

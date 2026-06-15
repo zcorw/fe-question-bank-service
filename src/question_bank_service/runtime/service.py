@@ -7,11 +7,19 @@ from question_bank_service.db.repositories import (
     QuestionCandidate,
     QuestionDetail,
 )
+from question_bank_service.runtime.keyword_index import KeywordIndex
 
 
 class RuntimeService:
-    def __init__(self, repository: QuestionBankRepository, *, close: Callable[[], None]) -> None:
+    def __init__(
+        self,
+        repository: QuestionBankRepository,
+        *,
+        keyword_index: KeywordIndex,
+        close: Callable[[], None],
+    ) -> None:
         self._repository = repository
+        self._keyword_index = keyword_index
         self._close = close
 
     def __enter__(self) -> "RuntimeService":
@@ -27,6 +35,9 @@ class RuntimeService:
 
     def list_keywords(self) -> Keywords:
         return self._repository.list_keywords()
+
+    def list_keyword_taxonomy(self) -> dict[str, object]:
+        return self._keyword_index.taxonomy
 
     def find_candidates(
         self,
@@ -56,8 +67,48 @@ class RuntimeService:
     def get_details_by_urls(self, question_urls: list[str]) -> list[QuestionDetail]:
         return self._repository.get_details_by_urls(question_urls)
 
+    def find_keyword_candidates(
+        self,
+        *,
+        exam_part: str | None,
+        keywords: list[str],
+        topic_tags: list[str],
+        knowledge_points: list[str],
+        syllabus_area: str | None,
+        limit: int,
+        offset: int,
+    ) -> dict[str, object]:
+        match = self._keyword_index.find_urls(
+            exam_part=exam_part,
+            keywords=keywords,
+            topic_tags=topic_tags,
+            knowledge_points=knowledge_points,
+            syllabus_area=syllabus_area,
+            limit=limit,
+            offset=offset,
+        )
+        candidates = [
+            candidate
+            for question_url in match.question_urls
+            for candidate in self.find_candidates(url=question_url, limit=1)
+        ]
+        questions = [self.candidate_to_response(candidate) for candidate in candidates]
+        response: dict[str, object] = {
+            "questions": questions,
+            "totalMatched": match.total_matched,
+        }
+        if len(questions) < limit:
+            response["shortage"] = {
+                "requested": limit,
+                "returned": len(questions),
+                "reason": "no_topic_matches"
+                if match.total_matched == 0
+                else "not_enough_topic_matches",
+            }
+        return response
+
     def candidate_to_response(self, candidate: QuestionCandidate) -> dict[str, object]:
-        return {
+        response: dict[str, object] = {
             "questionId": candidate.question_id,
             "sourcePageLabel": candidate.source_page_label,
             "sourcePageUrl": candidate.source_page_url,
@@ -68,6 +119,8 @@ class RuntimeService:
             "questionUrl": candidate.question_url,
             "scrapedAt": candidate.scraped_at,
         }
+        response.update(self._topic_metadata_response(candidate.question_url))
+        return response
 
     def detail_to_response(
         self,
@@ -93,4 +146,16 @@ class RuntimeService:
             response["answer"] = detail.answer
         if include_explanation:
             response["explanation"] = detail.explanation
+        response.update(self._topic_metadata_response(detail.question_url))
         return response
+
+    def _topic_metadata_response(self, question_url: str) -> dict[str, object]:
+        metadata = self._keyword_index.metadata_for_url(question_url)
+        if metadata is None:
+            return {}
+        return {
+            "primaryTag": metadata.primary_tag,
+            "topicTags": metadata.topic_tags,
+            "knowledgePoints": metadata.knowledge_points,
+            "syllabusArea": metadata.syllabus_area,
+        }

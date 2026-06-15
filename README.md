@@ -26,6 +26,10 @@ assets together operationally: a complete backup or restore must include both
 only the SQLite file can leave valid question rows with broken image URLs.
 
 SQLite and assets must be managed as one restore unit.
+The generated Runtime keyword files in `data/question_keyword_taxonomy.json` and
+`data/question_topic_mappings.json` are also part of the runtime data set. Keep
+them in `${HOST_DATA_DIR}` with `fe_siken_questions.sqlite` so Docker can read
+them at `/app/data/...`.
 
 `QUESTION_BANK_RUNTIME_HOST` and `QUESTION_BANK_ADMIN_HOST` control the VPS host
 IP address used by Docker port publishing. Keep them at `127.0.0.1` when the
@@ -60,6 +64,10 @@ directory, follow the **Existing VPS Asset Migration** checklist in
 `docs/CURRENT_PROJECT_MIGRATION_GUIDE.md`. Copy assets into `${HOST_ASSET_DIR}`,
 verify `/assets/fe-siken/...` through `question-bank-runtime` and FE-Test, and
 do not delete the old asset directory until verification and backups are done.
+
+Applications integrating with this service should read
+`docs/CONSUMER_INTEGRATION_GUIDE.md` for Docker network setup, local network
+access, Runtime API usage, and browser image proxy patterns.
 
 ## GitHub Actions Deployment
 

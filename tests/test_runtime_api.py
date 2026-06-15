@@ -10,7 +10,7 @@ from question_bank_service.config import Settings
 
 def test_runtime_api_exposes_read_only_question_bank(tmp_path: Path) -> None:
     db_path = _create_runtime_db(tmp_path)
-    client = TestClient(create_app(settings=_settings(db_path)))
+    client = TestClient(create_app(settings=_settings(db_path, _create_keyword_files(tmp_path))))
 
     assert client.get("/health").json() == {
         "ok": True,
@@ -18,33 +18,42 @@ def test_runtime_api_exposes_read_only_question_bank(tmp_path: Path) -> None:
         "readOnly": True,
     }
 
-    assert client.get("/keywords").json() == {
-        "categories": ["データベース", "基礎理論"],
-        "topics": ["SQL", "論理演算"],
-    }
+    keywords = client.get("/keywords").json()
+    assert keywords["version"] == 1
+    assert keywords["language"] == "ja"
+    assert keywords["tags"][0]["id"] == "logic"
+    assert keywords["tags"][0]["displayNameJa"] == "Logic"
+    assert keywords["tags"][0]["aliasesJa"] == ["Logic"]
 
     candidates = client.get(
         "/questions/candidates",
-        params={"category": "基礎理論", "topic": "論理演算"},
+        params={"category": "Theory", "topic": "Logic"},
     ).json()
-    assert candidates == [
-        {
-            "questionId": 1,
-            "sourcePageLabel": "令和6年秋",
-            "sourcePageUrl": "https://example.test/r6",
-            "examPart": "科目A",
-            "questionNo": "問1",
-            "topic": "論理演算",
-            "category": "基礎理論",
-            "questionUrl": "https://example.test/q1",
-            "scrapedAt": "2026-01-01",
-        }
-    ]
+    assert candidates[0] | {
+        "primaryTag": candidates[0]["primaryTag"],
+        "topicTags": candidates[0]["topicTags"],
+        "knowledgePoints": candidates[0]["knowledgePoints"],
+        "syllabusArea": candidates[0]["syllabusArea"],
+    } == {
+        "questionId": 1,
+        "sourcePageLabel": "R6",
+        "sourcePageUrl": "https://example.test/r6",
+        "examPart": "科目A",
+        "questionNo": "Q1",
+        "topic": "Logic",
+        "category": "Theory",
+        "questionUrl": "https://example.test/q1",
+        "scrapedAt": "2026-01-01",
+        "primaryTag": "logic",
+        "topicTags": ["logic"],
+        "knowledgePoints": ["logic"],
+        "syllabusArea": "mathematics",
+    }
 
 
 def test_runtime_detail_endpoints_hide_answer_by_default(tmp_path: Path) -> None:
     db_path = _create_runtime_db(tmp_path)
-    client = TestClient(create_app(settings=_settings(db_path)))
+    client = TestClient(create_app(settings=_settings(db_path, _create_keyword_files(tmp_path))))
 
     by_url = client.get(
         "/questions/by-url",
@@ -54,10 +63,10 @@ def test_runtime_detail_endpoints_hide_answer_by_default(tmp_path: Path) -> None
 
     assert by_url == by_id
     assert by_url["questionId"] == 1
-    assert by_url["questionText"] == "2^5 と ¬x を含む問題"
+    assert by_url["questionText"] == "2^5 question"
     assert by_url["choices"] == [
-        {"label": "ア", "text": "32"},
-        {"label": "イ", "text": "25"},
+        {"label": "A", "text": "32"},
+        {"label": "B", "text": "25"},
     ]
     assert "answer" not in by_url
     assert "explanation" not in by_url
@@ -65,7 +74,7 @@ def test_runtime_detail_endpoints_hide_answer_by_default(tmp_path: Path) -> None
 
 def test_runtime_detail_endpoints_include_answer_when_requested(tmp_path: Path) -> None:
     db_path = _create_runtime_db(tmp_path)
-    client = TestClient(create_app(settings=_settings(db_path)))
+    client = TestClient(create_app(settings=_settings(db_path, _create_keyword_files(tmp_path))))
 
     response = client.get(
         "/questions/by-url",
@@ -73,13 +82,13 @@ def test_runtime_detail_endpoints_include_answer_when_requested(tmp_path: Path) 
     )
 
     assert response.status_code == 200
-    assert response.json()["answer"] == "ア"
-    assert response.json()["explanation"] == "指数を保つ"
+    assert response.json()["answer"] == "A"
+    assert response.json()["explanation"] == "Power explanation"
 
 
 def test_runtime_detail_normalizes_image_metadata(tmp_path: Path) -> None:
     db_path = _create_runtime_db(tmp_path)
-    client = TestClient(create_app(settings=_settings(db_path)))
+    client = TestClient(create_app(settings=_settings(db_path, _create_keyword_files(tmp_path))))
 
     response = client.get("/questions/1")
 
@@ -97,9 +106,11 @@ def test_runtime_detail_normalizes_image_metadata(tmp_path: Path) -> None:
     ]
 
 
-def test_runtime_batch_details_preserve_request_order(tmp_path: Path) -> None:
+def test_runtime_batch_details_preserve_request_order_and_include_topic_metadata(
+    tmp_path: Path,
+) -> None:
     db_path = _create_runtime_db(tmp_path)
-    client = TestClient(create_app(settings=_settings(db_path)))
+    client = TestClient(create_app(settings=_settings(db_path, _create_keyword_files(tmp_path))))
 
     response = client.post(
         "/questions/details/batch",
@@ -116,24 +127,47 @@ def test_runtime_batch_details_preserve_request_order(tmp_path: Path) -> None:
         "https://example.test/q1",
     ]
     assert all("answer" not in item for item in response.json()["items"])
+    assert response.json()["items"][0]["primaryTag"] == "sql_select"
+    assert response.json()["items"][0]["topicTags"] == ["sql"]
+    assert response.json()["items"][0]["knowledgePoints"] == ["sql_select"]
+    assert response.json()["items"][0]["syllabusArea"] == "database"
 
 
-def test_runtime_search_candidates_accepts_multiple_categories(tmp_path: Path) -> None:
+def test_runtime_search_candidates_accepts_keywords_and_returns_shortage(
+    tmp_path: Path,
+) -> None:
     db_path = _create_runtime_db(tmp_path)
-    client = TestClient(create_app(settings=_settings(db_path)))
+    client = TestClient(create_app(settings=_settings(db_path, _create_keyword_files(tmp_path))))
 
-    response = client.post(
+    logic_response = client.post(
         "/questions/candidates/search",
-        json={"categories": ["基礎理論", "データベース"], "limit": 10},
+        json={"keywords": ["logic"], "topicTags": ["logic"], "limit": 10},
+    )
+    sql_response = client.post(
+        "/questions/candidates/search",
+        json={"keywords": ["SQL"], "topicTags": ["sql"], "limit": 10},
+    )
+    unknown_response = client.post(
+        "/questions/candidates/search",
+        json={"keywords": ["__NO_SUCH_FE_TOPIC__"], "limit": 5},
     )
 
-    assert response.status_code == 200
-    assert [item["questionId"] for item in response.json()] == [1, 2]
+    assert logic_response.status_code == 200
+    assert sql_response.status_code == 200
+    assert unknown_response.status_code == 200
+    assert [item["questionId"] for item in logic_response.json()["questions"]] == [1]
+    assert [item["questionId"] for item in sql_response.json()["questions"]] == [2]
+    assert logic_response.json()["questions"] != sql_response.json()["questions"]
+    assert logic_response.json()["questions"][0]["topicTags"] == ["logic"]
+    assert sql_response.json()["questions"][0]["topicTags"] == ["sql"]
+    assert unknown_response.json()["questions"] == []
+    assert unknown_response.json()["totalMatched"] == 0
+    assert unknown_response.json()["shortage"]["reason"] == "no_topic_matches"
 
 
 def test_runtime_returns_404_for_missing_detail(tmp_path: Path) -> None:
     db_path = _create_runtime_db(tmp_path)
-    client = TestClient(create_app(settings=_settings(db_path)))
+    client = TestClient(create_app(settings=_settings(db_path, _create_keyword_files(tmp_path))))
 
     response = client.get("/questions/999")
 
@@ -141,14 +175,95 @@ def test_runtime_returns_404_for_missing_detail(tmp_path: Path) -> None:
     assert response.json()["detail"]["code"] == "question_not_found"
 
 
-def _settings(db_path: Path) -> Settings:
+def _settings(db_path: Path, keyword_paths: tuple[Path, Path]) -> Settings:
     return Settings(
         database_path=db_path,
         asset_root=Path("public/assets/fe-siken"),
         read_only=True,
         enable_admin_api=False,
         admin_api_token=None,
+        keyword_taxonomy_path=keyword_paths[0],
+        question_topic_mappings_path=keyword_paths[1],
     )
+
+
+def _create_keyword_files(tmp_path: Path) -> tuple[Path, Path]:
+    taxonomy_path = tmp_path / "question_keyword_taxonomy.json"
+    mappings_path = tmp_path / "question_topic_mappings.json"
+    taxonomy_path.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "language": "ja",
+                "tags": [
+                    {
+                        "id": "logic",
+                        "level": "topicTag",
+                        "displayNameJa": "Logic",
+                        "aliasesJa": ["Logic"],
+                        "aliasesEn": ["logic"],
+                        "parentId": "mathematics",
+                        "syllabusArea": "mathematics",
+                    },
+                    {
+                        "id": "sql",
+                        "level": "topicTag",
+                        "displayNameJa": "SQL",
+                        "aliasesJa": ["SQL"],
+                        "aliasesEn": ["sql"],
+                        "parentId": "database",
+                        "syllabusArea": "database",
+                    },
+                    {
+                        "id": "sql_select",
+                        "level": "knowledgePoint",
+                        "displayNameJa": "SQL SELECT",
+                        "aliasesJa": ["SQL SELECT"],
+                        "aliasesEn": ["select"],
+                        "parentId": "sql",
+                        "syllabusArea": "database",
+                    },
+                ],
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    mappings_path.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "language": "ja",
+                "mappings": [
+                    {
+                        "questionUrl": "https://example.test/q1",
+                        "examPart": "科目A",
+                        "primaryTag": "logic",
+                        "topicTags": ["logic"],
+                        "knowledgePoints": ["logic"],
+                        "syllabusArea": "mathematics",
+                        "matchedEvidence": [],
+                        "confidence": 0.94,
+                        "needsHumanReview": False,
+                    },
+                    {
+                        "questionUrl": "https://example.test/q2",
+                        "examPart": "科目A",
+                        "primaryTag": "sql_select",
+                        "topicTags": ["sql"],
+                        "knowledgePoints": ["sql_select"],
+                        "syllabusArea": "database",
+                        "matchedEvidence": [],
+                        "confidence": 0.94,
+                        "needsHumanReview": False,
+                    },
+                ],
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    return taxonomy_path, mappings_path
 
 
 def _create_runtime_db(tmp_path: Path) -> Path:
@@ -189,23 +304,23 @@ def _create_runtime_db(tmp_path: Path) -> Path:
         [
             (
                 1,
-                "令和6年秋",
+                "R6",
                 "https://example.test/r6",
                 "科目A",
-                "問1",
-                "論理演算",
-                "基礎理論",
+                "Q1",
+                "Logic",
+                "Theory",
                 "https://example.test/q1",
                 "2026-01-01",
             ),
             (
                 2,
-                "令和6年秋",
+                "R6",
                 "https://example.test/r6",
                 "科目A",
-                "問2",
+                "Q2",
                 "SQL",
-                "データベース",
+                "Database",
                 "https://example.test/q2",
                 "2026-01-01",
             ),
@@ -221,13 +336,13 @@ def _create_runtime_db(tmp_path: Path) -> Path:
         [
             (
                 "https://example.test/q1",
-                "2^5 と ¬x を含む問題",
+                "2^5 question",
                 json.dumps(
-                    [{"label": "ア", "text": "32"}, {"label": "イ", "text": "25"}],
+                    [{"label": "A", "text": "32"}, {"label": "B", "text": "25"}],
                     ensure_ascii=False,
                 ),
-                "ア",
-                "指数を保つ",
+                "A",
+                "Power explanation",
                 "2026-01-02",
                 json.dumps(
                     [
@@ -246,10 +361,10 @@ def _create_runtime_db(tmp_path: Path) -> Path:
             ),
             (
                 "https://example.test/q2",
-                "SQL の問題",
-                json.dumps([{"label": "ア", "text": "SELECT"}], ensure_ascii=False),
-                "ア",
-                "説明",
+                "SQL question",
+                json.dumps([{"label": "A", "text": "SELECT"}], ensure_ascii=False),
+                "A",
+                "SQL explanation",
                 "2026-01-02",
                 "[]",
                 0,

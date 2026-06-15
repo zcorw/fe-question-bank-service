@@ -15,6 +15,8 @@ class Settings:
     read_only: bool
     enable_admin_api: bool
     admin_api_token: str | None
+    keyword_taxonomy_path: Path = Path("data/question_keyword_taxonomy.json")
+    question_topic_mappings_path: Path = Path("data/question_topic_mappings.json")
 
 
 def load_settings(env: Mapping[str, str] | None = None) -> Settings:
@@ -27,6 +29,12 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
     read_only = _parse_bool(values.get("QUESTION_BANK_READ_ONLY"), default=True)
     enable_admin_api = _parse_bool(values.get("ENABLE_ADMIN_API"), default=False)
     admin_api_token = _optional_non_empty(values.get("ADMIN_API_TOKEN"))
+    keyword_taxonomy_path = Path(
+        values.get("QUESTION_KEYWORD_TAXONOMY_PATH", "data/question_keyword_taxonomy.json")
+    )
+    question_topic_mappings_path = Path(
+        values.get("QUESTION_TOPIC_MAPPINGS_PATH", "data/question_topic_mappings.json")
+    )
 
     if enable_admin_api and admin_api_token is None:
         raise ConfigError("ADMIN_API_TOKEN is required when ENABLE_ADMIN_API is true")
@@ -37,6 +45,8 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
         read_only=read_only,
         enable_admin_api=enable_admin_api,
         admin_api_token=admin_api_token,
+        keyword_taxonomy_path=keyword_taxonomy_path,
+        question_topic_mappings_path=question_topic_mappings_path,
     )
 
 
