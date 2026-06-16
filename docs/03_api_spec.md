@@ -142,6 +142,31 @@ Each returned item includes keyword metadata when a mapping exists:
 }
 ```
 
+When learning explanation columns exist in `question_details`, detail responses
+also include:
+
+```json
+{
+  "learningExplanation": {
+    "questionUrl": "https://www.fe-siken.com/kakomon/14_aki/q7.html",
+    "explanationJa": "正答に至る理由を日本語で説明します。",
+    "distractorExplanationsJa": {
+      "ア": "この選択肢が誤りである理由を説明します。"
+    },
+    "knowledgePointJa": "中心知識",
+    "examPointJa": "試験での着眼点",
+    "commonTrapJa": "混同しやすい点"
+  },
+  "explanationJa": "正答に至る理由を日本語で説明します。",
+  "distractorExplanationsJa": {
+    "ア": "この選択肢が誤りである理由を説明します。"
+  },
+  "knowledgePointJa": "中心知識",
+  "examPointJa": "試験での着眼点",
+  "commonTrapJa": "混同しやすい点"
+}
+```
+
 ## Keyword Data Files
 
 Runtime reads keyword data from:

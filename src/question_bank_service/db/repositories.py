@@ -47,6 +47,12 @@ class QuestionDetail:
     images: list[dict[str, Any]]
     has_images: bool
     fetched_at: str
+    learning_explanation: dict[str, Any]
+    explanation_ja: str
+    distractor_explanations_ja: dict[str, str]
+    knowledge_point_ja: str
+    exam_point_ja: str
+    common_trap_ja: str
 
 
 class QuestionBankRepository:
@@ -129,6 +135,7 @@ class QuestionBankRepository:
         return [row[0] for row in rows]
 
     def _detail_query(self, where_clause: str, params: list[Any]) -> sqlite3.Row | None:
+        learning_columns = self._learning_detail_select_columns()
         return self._connection.execute(
             f"""
             SELECT
@@ -140,13 +147,33 @@ class QuestionBankRepository:
                 d.explanation,
                 d.images_json,
                 d.has_images,
-                d.fetched_at
+                d.fetched_at,
+                {learning_columns}
             FROM questions q
             JOIN question_details d ON q.url = d.question_url
             WHERE {where_clause}
             """,
             params,
         ).fetchone()
+
+    def _learning_detail_select_columns(self) -> str:
+        columns = {
+            row["name"]
+            for row in self._connection.execute("PRAGMA table_info(question_details)").fetchall()
+        }
+        select_columns = []
+        defaults = {
+            "learning_explanation_json": "'{}'",
+            "explanation_ja": "''",
+            "distractor_explanations_ja_json": "'{}'",
+            "knowledge_point_ja": "''",
+            "exam_point_ja": "''",
+            "common_trap_ja": "''",
+        }
+        for column, default in defaults.items():
+            expression = f"d.{column}" if column in columns else default
+            select_columns.append(f"{expression} AS {column}")
+        return ",\n                ".join(select_columns)
 
 
 def _candidate_from_row(row: sqlite3.Row) -> QuestionCandidate:
@@ -175,6 +202,12 @@ def _detail_from_row(row: sqlite3.Row) -> QuestionDetail:
         images=_parse_images(row["images_json"]),
         has_images=bool(row["has_images"]),
         fetched_at=row["fetched_at"],
+        learning_explanation=_parse_optional_object(row["learning_explanation_json"]),
+        explanation_ja=row["explanation_ja"],
+        distractor_explanations_ja=_parse_string_dict(row["distractor_explanations_ja_json"]),
+        knowledge_point_ja=row["knowledge_point_ja"],
+        exam_point_ja=row["exam_point_ja"],
+        common_trap_ja=row["common_trap_ja"],
     )
 
 
@@ -264,3 +297,17 @@ def _parse_json(value: str, *, field_name: str, expected_type: type | tuple[type
         )
         raise RepositoryError(f"Invalid {field_name}: expected {expected_name}")
     return parsed
+
+
+def _parse_optional_object(value: str) -> dict[str, Any]:
+    if not value or value == "{}":
+        return {}
+    parsed = _parse_json(value, field_name="learning_explanation_json", expected_type=dict)
+    return parsed
+
+
+def _parse_string_dict(value: str) -> dict[str, str]:
+    if not value or value == "{}":
+        return {}
+    parsed = _parse_json(value, field_name="distractor_explanations_ja_json", expected_type=dict)
+    return {str(key): str(item) for key, item in parsed.items()}

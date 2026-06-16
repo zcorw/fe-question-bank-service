@@ -146,6 +146,18 @@ class RuntimeService:
             response["answer"] = detail.answer
         if include_explanation:
             response["explanation"] = detail.explanation
+        if detail.learning_explanation:
+            response["learningExplanation"] = detail.learning_explanation
+        if detail.explanation_ja:
+            response["explanationJa"] = detail.explanation_ja
+        if detail.distractor_explanations_ja:
+            response["distractorExplanationsJa"] = detail.distractor_explanations_ja
+        if detail.knowledge_point_ja:
+            response["knowledgePointJa"] = detail.knowledge_point_ja
+        if detail.exam_point_ja:
+            response["examPointJa"] = detail.exam_point_ja
+        if detail.common_trap_ja:
+            response["commonTrapJa"] = detail.common_trap_ja
         response.update(self._topic_metadata_response(detail.question_url))
         return response
 

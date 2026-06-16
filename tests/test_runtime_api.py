@@ -86,6 +86,29 @@ def test_runtime_detail_endpoints_include_answer_when_requested(tmp_path: Path) 
     assert response.json()["explanation"] == "Power explanation"
 
 
+def test_runtime_detail_endpoints_include_learning_explanations(tmp_path: Path) -> None:
+    db_path = _create_runtime_db(tmp_path)
+    client = TestClient(create_app(settings=_settings(db_path, _create_keyword_files(tmp_path))))
+
+    response = client.get("/questions/1")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["learningExplanation"] == {
+        "questionUrl": "https://example.test/q1",
+        "explanationJa": "Learning explanation",
+        "distractorExplanationsJa": {"B": "B is not correct"},
+        "knowledgePointJa": "Logic",
+        "examPointJa": "Check the condition",
+        "commonTrapJa": "Do not confuse terms",
+    }
+    assert body["explanationJa"] == "Learning explanation"
+    assert body["distractorExplanationsJa"] == {"B": "B is not correct"}
+    assert body["knowledgePointJa"] == "Logic"
+    assert body["examPointJa"] == "Check the condition"
+    assert body["commonTrapJa"] == "Do not confuse terms"
+
+
 def test_runtime_detail_normalizes_image_metadata(tmp_path: Path) -> None:
     db_path = _create_runtime_db(tmp_path)
     client = TestClient(create_app(settings=_settings(db_path, _create_keyword_files(tmp_path))))
@@ -290,7 +313,15 @@ def _create_runtime_db(tmp_path: Path) -> Path:
             explanation TEXT NOT NULL,
             fetched_at TEXT NOT NULL,
             images_json TEXT NOT NULL DEFAULT '[]',
-            has_images INTEGER NOT NULL DEFAULT 0
+            has_images INTEGER NOT NULL DEFAULT 0,
+            learning_explanation_json TEXT NOT NULL DEFAULT '{}',
+            explanation_ja TEXT NOT NULL DEFAULT '',
+            distractor_explanations_ja_json TEXT NOT NULL DEFAULT '{}',
+            knowledge_point_ja TEXT NOT NULL DEFAULT '',
+            exam_point_ja TEXT NOT NULL DEFAULT '',
+            common_trap_ja TEXT NOT NULL DEFAULT '',
+            learning_explanation_generated_at TEXT NOT NULL DEFAULT '',
+            learning_explanation_source TEXT NOT NULL DEFAULT ''
         );
         """
     )
@@ -330,8 +361,10 @@ def _create_runtime_db(tmp_path: Path) -> Path:
         """
         INSERT INTO question_details (
             question_url, question_text, choices_json, answer, explanation, fetched_at,
-            images_json, has_images
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            images_json, has_images, learning_explanation_json, explanation_ja,
+            distractor_explanations_ja_json, knowledge_point_ja, exam_point_ja,
+            common_trap_ja, learning_explanation_generated_at, learning_explanation_source
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         [
             (
@@ -358,6 +391,24 @@ def _create_runtime_db(tmp_path: Path) -> Path:
                     ensure_ascii=False,
                 ),
                 1,
+                json.dumps(
+                    {
+                        "questionUrl": "https://example.test/q1",
+                        "explanationJa": "Learning explanation",
+                        "distractorExplanationsJa": {"B": "B is not correct"},
+                        "knowledgePointJa": "Logic",
+                        "examPointJa": "Check the condition",
+                        "commonTrapJa": "Do not confuse terms",
+                    },
+                    ensure_ascii=False,
+                ),
+                "Learning explanation",
+                json.dumps({"B": "B is not correct"}, ensure_ascii=False),
+                "Logic",
+                "Check the condition",
+                "Do not confuse terms",
+                "2026-06-15T11:07:24+00:00",
+                "test",
             ),
             (
                 "https://example.test/q2",
@@ -368,6 +419,14 @@ def _create_runtime_db(tmp_path: Path) -> Path:
                 "2026-01-02",
                 "[]",
                 0,
+                "{}",
+                "",
+                "{}",
+                "",
+                "",
+                "",
+                "",
+                "",
             ),
         ],
     )
