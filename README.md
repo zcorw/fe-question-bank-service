@@ -2,6 +2,14 @@
 
 FastAPI service for reading and maintaining the FE question bank SQLite database.
 
+## Documentation
+
+- `docs/PROJECT_GUIDE.md`: current project purpose, API, deployment, consumer
+  integration, backup, and operations guide.
+- `docs/03_api_spec.md`: Runtime/Admin API schema and examples.
+- `docs/CONSUMER_INTEGRATION_GUIDE.md`: how consuming applications connect by
+  Docker network or host network and proxy image assets.
+
 ## Docker On VPS
 
 1. Copy `.env.vps.example` to `.env` on the VPS and adjust paths and ports.
