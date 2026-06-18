@@ -11,3 +11,5 @@ build/
 data/*.sqlite
 data/*.sqlite-*
 data/backups/
+public/*.sqlite
+public/assets/fe-siken/
