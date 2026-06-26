@@ -59,8 +59,6 @@
       "expectedAnyQuestionUrls": [
         "https://www.fe-siken.com/kakomon/07_haru/a9.html",
         "https://www.fe-siken.com/kakomon/sample/a30.html",
-        "https://www.fe-siken.com/kakomon/sample/a31.html",
-        "https://www.fe-siken.com/kakomon/sample/a32.html",
         "https://www.fe-siken.com/kakomon/04_menjo/q36.html"
       ],
       "mustNotReturnDefaultUnmatchedQuestions": true,
@@ -78,8 +76,6 @@
         "limit": 5
       },
       "expectedAnyQuestionUrls": [
-        "https://www.fe-siken.com/kakomon/sample/a28.html",
-        "https://www.fe-siken.com/kakomon/sample/a29.html",
         "https://www.fe-siken.com/kakomon/04_menjo/q30.html",
         "https://www.fe-siken.com/kakomon/03_menjo/q31.html",
         "https://www.fe-siken.com/kakomon/03_menjo/q34.html"
@@ -102,7 +98,6 @@
         "https://www.fe-siken.com/kakomon/06_haru/a2.html",
         "https://www.fe-siken.com/kakomon/sample/a2.html",
         "https://www.fe-siken.com/kakomon/sample/a6.html",
-        "https://www.fe-siken.com/kakomon/sample/a8.html",
         "https://www.fe-siken.com/kakomon/04_menjo/q7.html"
       ],
       "mustNotReturnDefaultUnmatchedQuestions": true,

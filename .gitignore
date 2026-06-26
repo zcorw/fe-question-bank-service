@@ -11,3 +11,4 @@ build/
 data/*.sqlite
 data/*.sqlite-*
 data/backups/
+tmp/
